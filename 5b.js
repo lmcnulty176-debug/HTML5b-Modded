@@ -10630,7 +10630,6 @@ function rAF60fps() {
 			draw();
 		}
 	}
-}
 
 
 		// Added this line to fix unnecessary lag sometimes caused by the framerate limiter.
