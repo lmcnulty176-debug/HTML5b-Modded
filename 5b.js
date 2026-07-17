@@ -51,6 +51,9 @@ let _cursor = 'default';
 let touchCount = 0;
 let hoverText = '';
 const _keysDown = new Array(222).fill(false);
+
+let gamePaused = false;
+let advanceOneFrame = false;
 let _frameCount = 0;
 let qTimer = 0;
 let inputText = '';
@@ -7529,6 +7532,21 @@ function mouseup(event) {
 
 function keydown(event) {
 	_keysDown[event.keyCode || event.charCode] = true;
+
+	// Gameplay pause controls
+	if (menuScreen == 3 && !editingTextBox) {
+		if (event.key === "p" || event.key === "P") {
+			gamePaused = !gamePaused;
+			event.preventDefault();
+			return;
+		}
+
+		if ((event.key === "o" || event.key === "O") && gamePaused) {
+			advanceOneFrame = true;
+			event.preventDefault();
+			return;
+		}
+	}
 
 	if (editingTextBox && event.key) {
 		if (currentTextBoxAllowsLineBreaks && event.key == 'v' && (event.metaKey || event.ctrlKey)) {
