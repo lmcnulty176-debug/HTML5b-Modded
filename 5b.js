@@ -10615,21 +10615,22 @@ function rAF60fps() {
 	
 	// 1. If TAS is paused and we aren't forcing a single step, freeze execution
 	if (window.tasPaused && !window.tasForceTick) {
-		then = window.performance.now(); // Reset timing anchor to prevent speed-ups
+		then = window.performance.now(); 
 		return;
 	}
 
-	// 2. We removed the broken "frameRateThrottling" check here
+	// 2. Timing logic calculations
 	now = window.performance.now();
 	delta = now - then;
 	
 	// 3. Process frame if time has elapsed OR if manually forced via frame advance
 	if (delta > interval || window.tasForceTick) {
-		window.tasForceTick = false; // Reset the single frame advance flag immediately
+		window.tasForceTick = false; 
 		then = now - (delta % interval);
 		draw();
 	}
-}
+} // <--- Make sure this is the ONLY closing bracket at the end of the function!
+
 
 
 		// Added this line to fix unnecessary lag sometimes caused by the framerate limiter.
