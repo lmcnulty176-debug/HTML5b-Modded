@@ -10619,17 +10619,17 @@ function rAF60fps() {
 		return;
 	}
 
-	if (frameRateThrottling || window.tasForceTick) {
-		now = window.performance.now();
-		delta = now - then;
-		
-		// 2. Process frame if time has elapsed OR if manually forced via frame advance
-		if (delta > interval || window.tasForceTick) {
-			window.tasForceTick = false; // Reset the single frame advance flag immediately
-			then = now - (delta % interval);
-			draw();
-		}
+	// 2. We removed the broken "frameRateThrottling" check here
+	now = window.performance.now();
+	delta = now - then;
+	
+	// 3. Process frame if time has elapsed OR if manually forced via frame advance
+	if (delta > interval || window.tasForceTick) {
+		window.tasForceTick = false; // Reset the single frame advance flag immediately
+		then = now - (delta % interval);
+		draw();
 	}
+}
 
 
 		// Added this line to fix unnecessary lag sometimes caused by the framerate limiter.
