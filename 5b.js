@@ -10606,32 +10606,15 @@ let lastFrameReq = then;
 let interval = 1000 / fps;
 let delta;
 
-// ADD THESE TWO LINES:
-window.tasPaused = false;
-window.tasForceTick = false;
-
 function rAF60fps() {
 	requestAnimationFrame(rAF60fps);
-	
-	// 1. If TAS is paused and we aren't forcing a single step, freeze execution
-	if (window.tasPaused && !window.tasForceTick) {
-		then = window.performance.now(); 
-		return;
-	}
-
-	// 2. Timing logic calculations
-	now = window.performance.now();
-	delta = now - then;
-	
-	// 3. Process frame if time has elapsed OR if manually forced via frame advance
-	if (delta > interval || window.tasForceTick) {
-		window.tasForceTick = false; 
-		then = now - (delta % interval);
-		draw();
-	}
-} // <--- Make sure this is the ONLY closing bracket at the end of the function!
-
-
+	if (frameRateThrottling) {
+		now = window.performance.now();
+		delta = now - then;
+		if (delta > interval) {
+			then = now - (delta % interval);
+			draw();
+		}
 
 		// Added this line to fix unnecessary lag sometimes caused by the framerate limiter.
 		if (lastFrameReq - then > interval) then = now;
@@ -11293,20 +11276,37 @@ function deselectAllTextBoxes() {
 	}
 	canvas.setAttribute('contenteditable', false);
 }
-window.addEventListener('keydown', (e) => {
-    // Press 'P' to pause or unpause the game
+// === SAFE EXTERNAL TAS PATCH ===
+window.tasPaused = false;
+window.tasForceTick = false;
+
+// This intercepts and overwrites rAF60fps from the outside so you don't break the code brackets
+const originalRAF = rAF60fps;
+rAF60fps = function() {
+    requestAnimationFrame(rAF60fps);
+    
+    if (window.tasPaused && !window.tasForceTick) {
+        then = window.performance.now(); 
+        return;
+    }
+
+    now = window.performance.now();
+    delta = now - then;
+    
+    if (delta > interval || window.tasForceTick) {
+        window.tasForceTick = false; 
+        then = now - (delta % interval);
+        draw();
+    }
+};
+
+window.addEventListener('keydown', function(e) {
     if (e.key === 'p' || e.key === 'P') {
         window.tasPaused = !window.tasPaused;
         console.log("TAS Status - Is Game Paused:", window.tasPaused);
     }
-    
-    // Press Period (.) to advance exactly 1 frame forward
     if (e.key === '.') {
-        if (!window.tasPaused) {
-            window.tasPaused = true; 
-        }
+        if (!window.tasPaused) window.tasPaused = true; 
         window.tasForceTick = true;
-        console.log("TAS System: Frame Advanced (+1)");
     }
 });
-
