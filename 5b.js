@@ -11275,38 +11275,3 @@ function deselectAllTextBoxes() {
 		}
 	}
 	canvas.setAttribute('contenteditable', false);
-}
-// === SAFE EXTERNAL TAS PATCH ===
-window.tasPaused = false;
-window.tasForceTick = false;
-
-// This intercepts and overwrites rAF60fps from the outside so you don't break the code brackets
-const originalRAF = rAF60fps;
-rAF60fps = function() {
-    requestAnimationFrame(rAF60fps);
-    
-    if (window.tasPaused && !window.tasForceTick) {
-        then = window.performance.now(); 
-        return;
-    }
-
-    now = window.performance.now();
-    delta = now - then;
-    
-    if (delta > interval || window.tasForceTick) {
-        window.tasForceTick = false; 
-        then = now - (delta % interval);
-        draw();
-    }
-};
-
-window.addEventListener('keydown', function(e) {
-    if (e.key === 'p' || e.key === 'P') {
-        window.tasPaused = !window.tasPaused;
-        console.log("TAS Status - Is Game Paused:", window.tasPaused);
-    }
-    if (e.key === '.') {
-        if (!window.tasPaused) window.tasPaused = true; 
-        window.tasForceTick = true;
-    }
-});
