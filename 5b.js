@@ -10606,15 +10606,32 @@ let lastFrameReq = then;
 let interval = 1000 / fps;
 let delta;
 
+// ADD THESE TWO LINES:
+window.tasPaused = false;
+window.tasForceTick = false;
+
 function rAF60fps() {
 	requestAnimationFrame(rAF60fps);
-	if (frameRateThrottling) {
+	
+	// 1. If TAS is paused and we aren't forcing a single step, freeze execution
+	if (window.tasPaused && !window.tasForceTick) {
+		then = window.performance.now(); // Reset timing anchor to prevent speed-ups
+		return;
+	}
+
+	if (frameRateThrottling || window.tasForceTick) {
 		now = window.performance.now();
 		delta = now - then;
-		if (delta > interval) {
+		
+		// 2. Process frame if time has elapsed OR if manually forced via frame advance
+		if (delta > interval || window.tasForceTick) {
+			window.tasForceTick = false; // Reset the single frame advance flag immediately
 			then = now - (delta % interval);
 			draw();
 		}
+	}
+}
+
 
 		// Added this line to fix unnecessary lag sometimes caused by the framerate limiter.
 		if (lastFrameReq - then > interval) then = now;
@@ -11276,3 +11293,20 @@ function deselectAllTextBoxes() {
 	}
 	canvas.setAttribute('contenteditable', false);
 }
+window.addEventListener('keydown', (e) => {
+    // Press 'P' to pause or unpause the game
+    if (e.key === 'p' || e.key === 'P') {
+        window.tasPaused = !window.tasPaused;
+        console.log("TAS Status - Is Game Paused:", window.tasPaused);
+    }
+    
+    // Press Period (.) to advance exactly 1 frame forward
+    if (e.key === '.') {
+        if (!window.tasPaused) {
+            window.tasPaused = true; 
+        }
+        window.tasForceTick = true;
+        console.log("TAS System: Frame Advanced (+1)");
+    }
+});
+
