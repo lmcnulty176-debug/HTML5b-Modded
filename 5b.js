@@ -51,7 +51,6 @@ let _cursor = 'default';
 let touchCount = 0;
 let hoverText = '';
 const _keysDown = new Array(222).fill(false);
-let gamePaused = false;
 let _frameCount = 0;
 let qTimer = 0;
 let inputText = '';
@@ -7531,13 +7530,6 @@ function mouseup(event) {
 function keydown(event) {
 	_keysDown[event.keyCode || event.charCode] = true;
 
-	// Toggle pause with P
-	if ((event.key === 'p' || event.key === 'P') && menuScreen == 3) {
-		gamePaused = !gamePaused;
-		event.preventDefault();
-		return;
-	}
-
 	if (editingTextBox && event.key) {
 		if (currentTextBoxAllowsLineBreaks && event.key == 'v' && (event.metaKey || event.ctrlKey)) {
 			if (browserPasteSolution) navigator.clipboard.readText().then(clipText => {inputText += clipText;}).catch(err => console.log(err));
@@ -7704,34 +7696,6 @@ function draw() {
 	onScrollbar = false;
 	mousePressedLastFrame = pmouseIsDown && !mouseIsDown;
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-	// Freeze gameplay when paused
-	if (gamePaused && menuScreen == 3) {
-		ctx.save();
-
-		ctx.fillStyle = "rgba(0,0,0,0.5)";
-		ctx.fillRect(0, 0, cwidth, cheight);
-
-		ctx.fillStyle = "#ffffff";
-		ctx.font = "bold 48px Helvetica";
-		ctx.textAlign = "center";
-		ctx.fillText("PAUSED", cwidth / 2, cheight / 2);
-
-		ctx.font = "20px Helvetica";
-		ctx.fillText("Press P to Resume", cwidth / 2, cheight / 2 + 40);
-
-		ctx.restore();
-
-		ctxReal.drawImage(canvas, 0, 0, cwidth, cheight);
-
-		_frameCount++;
-		pmouseIsDown = mouseIsDown;
-		_pxmouse = _xmouse;
-		_pymouse = _ymouse;
-		pmenuScreen = menuScreen;
-		return;
-	}
-
 	if (menuScreen == 2 || menuScreen == 3) ctx.translate(Math.floor(-cameraX + shakeX), Math.floor(-cameraY + shakeY));
 	switch (menuScreen) {
 		case -1:
